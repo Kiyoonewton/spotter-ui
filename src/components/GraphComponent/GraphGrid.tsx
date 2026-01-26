@@ -7,7 +7,7 @@ type DutyStatus = "off-duty" | "sleeper-berth" | "driving" | "on-duty";
 
 const GraphGrid: React.FC<GraphDataProps> = ({ hourData, remarks }) => {
   // SVG dimensions and grid layout
-  const svgWidth = 1200;
+  const svgWidth = 100;
   const svgHeight = 320;
   const leftMargin = 100;
   const rightMargin = 80;
@@ -91,21 +91,65 @@ const GraphGrid: React.FC<GraphDataProps> = ({ hourData, remarks }) => {
       hours[segment.status] += duration;
     });
     const total = Object.values(hours).reduce((sum, value) => sum + value, 0);
-    
+
     return { ...hours, total };
   }, [segments]);
 
   return (
     <div className="eld-graph-container">
       <svg
-        width={svgWidth}
+        width={`${svgWidth}%`}
         height={svgHeight}
         className="grid-svg"
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
         preserveAspectRatio="xMidYMid meet"
       >
-        {/* Black header background */}
-        <rect x="0" y="0" width={svgWidth} height={headerHeight} fill="black" />
+        {/* Gradient header background */}
+        <defs>
+          <linearGradient id="headerGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop
+              offset="0%"
+              style={{ stopColor: "#1e3a8a", stopOpacity: 1 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "#2563eb", stopOpacity: 1 }}
+            />
+          </linearGradient>
+          <linearGradient id="rowGradient1" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop
+              offset="0%"
+              style={{ stopColor: "#f0f9ff", stopOpacity: 1 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "#e0f2fe", stopOpacity: 1 }}
+            />
+          </linearGradient>
+          <linearGradient id="rowGradient2" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop
+              offset="0%"
+              style={{ stopColor: "#fef3c7", stopOpacity: 1 }}
+            />
+            <stop
+              offset="100%"
+              style={{ stopColor: "#fde68a", stopOpacity: 1 }}
+            />
+          </linearGradient>
+          <filter id="shadow">
+            <feDropShadow dx="0" dy="2" stdDeviation="3" floodOpacity="0.3" />
+          </filter>
+        </defs>
+
+        {/* Header background with gradient */}
+        <rect
+          x="0"
+          y="0"
+          width={svgWidth}
+          height={headerHeight}
+          fill="url(#headerGradient)"
+          filter="url(#shadow)"
+        />
 
         {/* Hours header */}
         {Array.from({ length: 25 }, (_, i) => {
@@ -175,82 +219,175 @@ const GraphGrid: React.FC<GraphDataProps> = ({ hourData, remarks }) => {
           Hours
         </text>
 
-        {/* Grid background */}
+        {/* Grid background with alternating row colors */}
+        {/* Off Duty row */}
         <rect
           x="0"
           y={headerHeight}
           width={svgWidth}
-          height={svgHeight - headerHeight}
-          fill="white"
+          height={rowHeight}
+          fill="url(#rowGradient1)"
+        />
+        {/* Sleeper Berth row */}
+        <rect
+          x="0"
+          y={headerHeight + rowHeight}
+          width={svgWidth}
+          height={rowHeight}
+          fill="#ffffff"
+        />
+        {/* Driving row */}
+        <rect
+          x="0"
+          y={headerHeight + 2 * rowHeight}
+          width={svgWidth}
+          height={rowHeight}
+          fill="url(#rowGradient2)"
+        />
+        {/* On Duty row */}
+        <rect
+          x="0"
+          y={headerHeight + 3 * rowHeight}
+          width={svgWidth}
+          height={rowHeight}
+          fill="#ffffff"
+        />
+        {/* Remarks row */}
+        <rect
+          x="0"
+          y={headerHeight + 4 * rowHeight}
+          width={svgWidth}
+          height={remarksHeight}
+          fill="#f9fafb"
         />
 
-        {/* Row labels */}
-        <text
-          x={leftMargin - 10}
-          y={headerHeight + rowHeight / 2}
-          textAnchor="end"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="12"
-          dominantBaseline="middle"
-        >
-          Off Duty
-        </text>
-        <text
-          x={leftMargin - 10}
-          y={headerHeight + rowHeight + rowHeight / 2}
-          textAnchor="end"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="12"
-          dominantBaseline="middle"
-        >
-          Sleeper Berth
-        </text>
-        <text
-          x={leftMargin - 10}
-          y={headerHeight + 2 * rowHeight + rowHeight / 2}
-          textAnchor="end"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="12"
-          dominantBaseline="middle"
-        >
-          Driving
-        </text>
-        <text
-          x={leftMargin - 10}
-          y={headerHeight + 3 * rowHeight + rowHeight / 2 - 5}
-          textAnchor="end"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="12"
-          dominantBaseline="middle"
-        >
-          On Duty
-        </text>
-        <text
-          x={leftMargin - 10}
-          y={headerHeight + 3 * rowHeight + rowHeight / 2 + 10}
-          textAnchor="end"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="12"
-          dominantBaseline="middle"
-        >
-          (Not Driving)
-        </text>
-        <text
-          x={leftMargin - 10}
-          y={headerHeight + 4 * rowHeight + remarksHeight / 2 - 10 - 15}
-          textAnchor="end"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="12"
-          dominantBaseline="middle"
-        >
-          REMARKS
-        </text>
+        {/* Row labels with icons and better styling */}
+        <g>
+          {/* Off Duty */}
+          <rect
+            x={5}
+            y={headerHeight + rowHeight / 2 - 12}
+            width={leftMargin - 15}
+            height={24}
+            fill="#3b82f6"
+            rx="4"
+            opacity="0.1"
+          />
+          <text
+            x={leftMargin - 10}
+            y={headerHeight + rowHeight / 2}
+            textAnchor="end"
+            fill="#1e40af"
+            fontWeight="bold"
+            fontSize="13"
+            dominantBaseline="middle"
+          >
+            🛌 Off Duty
+          </text>
+        </g>
+        <g>
+          {/* Sleeper Berth */}
+          <rect
+            x={5}
+            y={headerHeight + rowHeight + rowHeight / 2 - 12}
+            width={leftMargin - 15}
+            height={24}
+            fill="#8b5cf6"
+            rx="4"
+            opacity="0.1"
+          />
+          <text
+            x={leftMargin - 10}
+            y={headerHeight + rowHeight + rowHeight / 2}
+            textAnchor="end"
+            fill="#6d28d9"
+            fontWeight="bold"
+            fontSize="13"
+            dominantBaseline="middle"
+          >
+            😴 Sleeper Berth
+          </text>
+        </g>
+        <g>
+          {/* Driving */}
+          <rect
+            x={5}
+            y={headerHeight + 2 * rowHeight + rowHeight / 2 - 12}
+            width={leftMargin - 15}
+            height={24}
+            fill="#f59e0b"
+            rx="4"
+            opacity="0.1"
+          />
+          <text
+            x={leftMargin - 10}
+            y={headerHeight + 2 * rowHeight + rowHeight / 2}
+            textAnchor="end"
+            fill="#d97706"
+            fontWeight="bold"
+            fontSize="13"
+            dominantBaseline="middle"
+          >
+            🚛 Driving
+          </text>
+        </g>
+        <g>
+          {/* On Duty */}
+          <rect
+            x={5}
+            y={headerHeight + 3 * rowHeight + rowHeight / 2 - 18}
+            width={leftMargin - 15}
+            height={36}
+            fill="#10b981"
+            rx="4"
+            opacity="0.1"
+          />
+          <text
+            x={leftMargin - 10}
+            y={headerHeight + 3 * rowHeight + rowHeight / 2 - 5}
+            textAnchor="end"
+            fill="#059669"
+            fontWeight="bold"
+            fontSize="13"
+            dominantBaseline="middle"
+          >
+            ⚙️ On Duty
+          </text>
+          <text
+            x={leftMargin - 10}
+            y={headerHeight + 3 * rowHeight + rowHeight / 2 + 10}
+            textAnchor="end"
+            fill="#059669"
+            fontWeight="normal"
+            fontSize="10"
+            dominantBaseline="middle"
+          >
+            (Not Driving)
+          </text>
+        </g>
+        <g>
+          {/* Remarks */}
+          <rect
+            x={5}
+            y={headerHeight + 4 * rowHeight + remarksHeight / 2 - 25 - 12}
+            width={leftMargin - 15}
+            height={24}
+            fill="#6b7280"
+            rx="4"
+            opacity="0.1"
+          />
+          <text
+            x={leftMargin - 10}
+            y={headerHeight + 4 * rowHeight + remarksHeight / 2 - 10 - 15}
+            textAnchor="end"
+            fill="#374151"
+            fontWeight="bold"
+            fontSize="13"
+            dominantBaseline="middle"
+          >
+            📍 REMARKS
+          </text>
+        </g>
 
         {/* Horizontal row dividers */}
         <line
@@ -336,41 +473,99 @@ const GraphGrid: React.FC<GraphDataProps> = ({ hourData, remarks }) => {
           </React.Fragment>
         ))}
 
-        {/* Status segments (horizontal blue lines) */}
+        {/* Status segments with enhanced styling */}
         {segments.map((segment, index) => {
           const startX = timeToX(segment.startTime);
           const endX = timeToX(segment.endTime);
           const y = statusToY[segment.status];
 
+          // Color based on status
+          const segmentColors: Record<DutyStatus, string> = {
+            "off-duty": "#3b82f6",
+            "sleeper-berth": "#8b5cf6",
+            driving: "#f59e0b",
+            "on-duty": "#10b981",
+          };
+
           return (
-            <line
-              key={`segment-${index}`}
-              x1={startX}
-              y1={y}
-              x2={endX}
-              y2={y}
-              stroke="#0078d4"
-              strokeWidth="3"
-            />
+            <g key={`segment-${index}`}>
+              {/* Shadow line */}
+              <line
+                x1={startX}
+                y1={y + 1}
+                x2={endX}
+                y2={y + 1}
+                stroke="#000000"
+                strokeWidth="5"
+                opacity="0.1"
+              />
+              {/* Main colored line */}
+              <line
+                x1={startX}
+                y1={y}
+                x2={endX}
+                y2={y}
+                stroke={segmentColors[segment.status]}
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+            </g>
           );
         })}
 
-        {/* Transitions (vertical blue lines) */}
+        {/* Transitions with gradient effect */}
         {transitions.map((transition, index) => {
           const x = timeToX(transition.hour);
           const y1 = statusToY[transition.fromStatus];
           const y2 = statusToY[transition.toStatus];
 
+          const transitionColors: Record<DutyStatus, string> = {
+            "off-duty": "#3b82f6",
+            "sleeper-berth": "#8b5cf6",
+            driving: "#f59e0b",
+            "on-duty": "#10b981",
+          };
+
           return (
-            <line
-              key={`transition-${index}`}
-              x1={x}
-              y1={y1}
-              x2={x}
-              y2={y2}
-              stroke="#0078d4"
-              strokeWidth="3"
-            />
+            <g key={`transition-${index}`}>
+              {/* Shadow line */}
+              <line
+                x1={x + 1}
+                y1={y1}
+                x2={x + 1}
+                y2={y2}
+                stroke="#000000"
+                strokeWidth="5"
+                opacity="0.1"
+              />
+              {/* Main transition line */}
+              <line
+                x1={x}
+                y1={y1}
+                x2={x}
+                y2={y2}
+                stroke={transitionColors[transition.fromStatus]}
+                strokeWidth="4"
+                strokeLinecap="round"
+              />
+              {/* Transition dot at junction */}
+              <circle
+                cx={x}
+                cy={y1}
+                r="5"
+                fill={transitionColors[transition.fromStatus]}
+                stroke="white"
+                strokeWidth="2"
+              />
+              <circle
+                cx={x}
+                cy={y2}
+                r="5"
+                fill={transitionColors[transition.toStatus]}
+                stroke="white"
+                strokeWidth="2"
+              />
+            </g>
           );
         })}
 
@@ -398,82 +593,158 @@ const GraphGrid: React.FC<GraphDataProps> = ({ hourData, remarks }) => {
           );
         })}
 
-        {/* Total Hours for each status */}
-        <text
-          x={svgWidth - rightMargin / 2}
-          y={headerHeight + rowHeight / 2}
-          textAnchor="middle"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="14"
-          dominantBaseline="middle"
-        >
-          {totalHours["off-duty"].toFixed(1)}
-        </text>
-        <text
-          x={svgWidth - rightMargin / 2}
-          y={headerHeight + rowHeight + rowHeight / 2}
-          textAnchor="middle"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="14"
-          dominantBaseline="middle"
-        >
-          {totalHours["sleeper-berth"].toFixed(1)}
-        </text>
-        <text
-          x={svgWidth - rightMargin / 2}
-          y={headerHeight + 2 * rowHeight + rowHeight / 2}
-          textAnchor="middle"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="14"
-          dominantBaseline="middle"
-        >
-          {totalHours["driving"].toFixed(1)}
-        </text>
-        <text
-          x={svgWidth - rightMargin / 2}
-          y={headerHeight + 3 * rowHeight + rowHeight / 2}
-          textAnchor="middle"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="14"
-          dominantBaseline="middle"
-        >
-          {totalHours["on-duty"].toFixed(1)}
-        </text>
-        <text
-          x={svgWidth - rightMargin / 2}
-          y={headerHeight + 4 * rowHeight + rowHeight / 2}
-          textAnchor="middle"
-          fill="#0078d4"
-          fontWeight="bold"
-          fontSize="14"
-          dominantBaseline="middle"
-        >
-          {totalHours.total.toFixed(1)}
-        </text>
+        {/* Total Hours for each status with colored badges */}
+        <g>
+          <rect
+            x={svgWidth - rightMargin / 2 - 25}
+            y={headerHeight + rowHeight / 2 - 12}
+            width={50}
+            height={24}
+            fill="#3b82f6"
+            rx="12"
+            opacity="0.9"
+          />
+          <text
+            x={svgWidth - rightMargin / 2}
+            y={headerHeight + rowHeight / 2}
+            textAnchor="middle"
+            fill="white"
+            fontWeight="bold"
+            fontSize="14"
+            dominantBaseline="middle"
+          >
+            {totalHours["off-duty"].toFixed(1)}
+          </text>
+        </g>
+        <g>
+          <rect
+            x={svgWidth - rightMargin / 2 - 25}
+            y={headerHeight + rowHeight + rowHeight / 2 - 12}
+            width={50}
+            height={24}
+            fill="#8b5cf6"
+            rx="12"
+            opacity="0.9"
+          />
+          <text
+            x={svgWidth - rightMargin / 2}
+            y={headerHeight + rowHeight + rowHeight / 2}
+            textAnchor="middle"
+            fill="white"
+            fontWeight="bold"
+            fontSize="14"
+            dominantBaseline="middle"
+          >
+            {totalHours["sleeper-berth"].toFixed(1)}
+          </text>
+        </g>
+        <g>
+          <rect
+            x={svgWidth - rightMargin / 2 - 25}
+            y={headerHeight + 2 * rowHeight + rowHeight / 2 - 12}
+            width={50}
+            height={24}
+            fill="#f59e0b"
+            rx="12"
+            opacity="0.9"
+          />
+          <text
+            x={svgWidth - rightMargin / 2}
+            y={headerHeight + 2 * rowHeight + rowHeight / 2}
+            textAnchor="middle"
+            fill="white"
+            fontWeight="bold"
+            fontSize="14"
+            dominantBaseline="middle"
+          >
+            {totalHours["driving"].toFixed(1)}
+          </text>
+        </g>
+        <g>
+          <rect
+            x={svgWidth - rightMargin / 2 - 25}
+            y={headerHeight + 3 * rowHeight + rowHeight / 2 - 12}
+            width={50}
+            height={24}
+            fill="#10b981"
+            rx="12"
+            opacity="0.9"
+          />
+          <text
+            x={svgWidth - rightMargin / 2}
+            y={headerHeight + 3 * rowHeight + rowHeight / 2}
+            textAnchor="middle"
+            fill="white"
+            fontWeight="bold"
+            fontSize="14"
+            dominantBaseline="middle"
+          >
+            {totalHours["on-duty"].toFixed(1)}
+          </text>
+        </g>
+        <g>
+          <rect
+            x={svgWidth - rightMargin / 2 - 30}
+            y={headerHeight + 4 * rowHeight + rowHeight / 2 - 14}
+            width={60}
+            height={28}
+            fill="#1e3a8a"
+            rx="14"
+            opacity="0.9"
+          />
+          <text
+            x={svgWidth - rightMargin / 2}
+            y={headerHeight + 4 * rowHeight + rowHeight / 2}
+            textAnchor="middle"
+            fill="white"
+            fontWeight="bold"
+            fontSize="16"
+            dominantBaseline="middle"
+          >
+            {totalHours.total.toFixed(1)}
+          </text>
+        </g>
       </svg>
 
       <style jsx>{`
         .eld-graph-container {
-          font-family: Arial, sans-serif;
+          font-family:
+            "Inter",
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
           width: 100%;
           max-width: ${svgWidth}px;
-          margin: 0 auto;
+          margin: 20px auto;
+          background: white;
+          border-radius: 12px;
+          padding: 20px;
+          box-shadow:
+            0 4px 6px -1px rgba(0, 0, 0, 0.1),
+            0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         .graph-title {
-          color: #0078d4;
-          margin-bottom: 10px;
-          font-size: 16px;
+          color: #1e3a8a;
+          margin-bottom: 15px;
+          font-size: 18px;
+          font-weight: 600;
           text-align: center;
         }
 
         .grid-svg {
-          border: 2px solid #000;
+          border: 3px solid #e5e7eb;
+          border-radius: 8px;
           display: block;
+          background: linear-gradient(to bottom, #ffffff, #f9fafb);
+          transition: box-shadow 0.3s ease;
+        }
+
+        .grid-svg:hover {
+          box-shadow:
+            0 10px 15px -3px rgba(0, 0, 0, 0.1),
+            0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
       `}</style>
     </div>

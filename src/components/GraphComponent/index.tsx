@@ -25,7 +25,7 @@ const GraphWrapper = ({ graphData }: { graphData: GraphDataProps }) => {
             <LoadingComponent height={320} text="Loading ELD-graph data" />
           }
         >
-          <GraphGrid {...graphData} />
+          {/* <GraphGrid {...graphData} /> */}
         </Suspense>
       )}
 

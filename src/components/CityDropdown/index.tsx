@@ -14,6 +14,8 @@ import {
   Clock,
   AlertTriangle,
   CheckCircle,
+  Map,
+  FileText,
 } from "lucide-react";
 // Import types and schema - make sure to update your locationSchema.ts with the code I provided
 import {
@@ -24,7 +26,7 @@ import {
 
 // Import the OpenStreetMap geocoding service
 import { osmGeocodingService } from "@/services/geocodingServices";
-import { TripData } from "@/app/types";
+import { RouteWithStops, TripData } from "@/app/types";
 
 // Rate limiting helper function to avoid hitting Nominatim's rate limits
 const useDebounce = (value: string, delay: number = 500) => {
@@ -51,9 +53,13 @@ const MAX_CYCLE_HOURS = 70; // Maximum hours in 8-day cycle (70-hour rule)
 export default function OSMLocationForm({
   onCalculate,
   isRouteData,
+  gotoGraph,
+  routeData,
 }: {
   onCalculate: (data: TripData) => void;
   isRouteData: boolean;
+  gotoGraph: () => void;
+  routeData: RouteWithStops | null;
 }) {
   // React Hook Form with Zod integration
   const {
@@ -127,6 +133,7 @@ export default function OSMLocationForm({
 
   // States for UI interaction
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isCalculating, setIsCalculating] = useState<boolean>(false);
   const [geocodingInProgress, setGeocodingInProgress] = useState({
     currentLocation: false,
     pickupLocation: false,
@@ -182,7 +189,7 @@ export default function OSMLocationForm({
   // Convert address to coordinates using OSM
   const convertAddressToCoordinates = async (
     address: string,
-    field: "currentLocation" | "pickupLocation" | "dropoffLocation"
+    field: "currentLocation" | "pickupLocation" | "dropoffLocation",
   ) => {
     if (!address) return;
 
@@ -202,7 +209,7 @@ export default function OSMLocationForm({
   // Handle suggestion click
   const handleSuggestionClick = async (
     suggestion: string,
-    field: "currentLocation" | "pickupLocation" | "dropoffLocation"
+    field: "currentLocation" | "pickupLocation" | "dropoffLocation",
   ) => {
     setValue(`${field}.address`, suggestion);
     setSuggestions((prev) => ({ ...prev, [field]: [] }));
@@ -221,9 +228,8 @@ export default function OSMLocationForm({
             const coordinates = { latitude, longitude };
 
             // Use reverse geocoding to get a readable address
-            const locationData = await osmGeocodingService.reverseGeocode(
-              coordinates
-            );
+            const locationData =
+              await osmGeocodingService.reverseGeocode(coordinates);
 
             setValue("currentLocation", {
               address: locationData.address,
@@ -238,7 +244,7 @@ export default function OSMLocationForm({
         (error) => {
           console.error("Geolocation error:", error);
           setIsLoading(false);
-        }
+        },
       );
     } else {
       // alert("Geolocation is not supported by your browser");
@@ -248,7 +254,7 @@ export default function OSMLocationForm({
 
   // Form submission handler
   const onSubmit = async (
-    data: LocationFormDataWithCoordinates & { currentCycleHours: number }
+    data: LocationFormDataWithCoordinates & { currentCycleHours: number },
   ) => {
     // Validate with our custom validator to ensure coordinates are present
     const validation = validateLocationForm(data);
@@ -263,10 +269,10 @@ export default function OSMLocationForm({
         address: data.currentLocation.address,
         coordinates: {
           latitude: Number(
-            data.currentLocation.coordinates?.latitude.toFixed(6)
+            data.currentLocation.coordinates?.latitude.toFixed(6),
           ),
           longitude: Number(
-            data.currentLocation.coordinates?.longitude.toFixed(6)
+            data.currentLocation.coordinates?.longitude.toFixed(6),
           ),
         },
       },
@@ -274,10 +280,10 @@ export default function OSMLocationForm({
         address: data.pickupLocation.address,
         coordinates: {
           latitude: Number(
-            data.pickupLocation.coordinates?.latitude.toFixed(6)
+            data.pickupLocation.coordinates?.latitude.toFixed(6),
           ),
           longitude: Number(
-            data.pickupLocation.coordinates?.longitude.toFixed(6)
+            data.pickupLocation.coordinates?.longitude.toFixed(6),
           ),
         },
       },
@@ -285,16 +291,23 @@ export default function OSMLocationForm({
         address: data.dropoffLocation.address,
         coordinates: {
           latitude: Number(
-            data.dropoffLocation.coordinates?.latitude.toFixed(6)
+            data.dropoffLocation.coordinates?.latitude.toFixed(6),
           ),
           longitude: Number(
-            data.dropoffLocation.coordinates?.longitude.toFixed(6)
+            data.dropoffLocation.coordinates?.longitude.toFixed(6),
           ),
         },
       },
       currentCycleUsed: data.currentCycleHours,
     };
+
+    setIsCalculating(true);
     onCalculate(tripData);
+
+    // Mark calculation as complete after API call
+    setTimeout(() => {
+      setIsCalculating(false);
+    }, 300);
   };
   // Close suggestions when clicking outside
   useEffect(() => {
@@ -318,7 +331,7 @@ export default function OSMLocationForm({
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Driver Hours Information Box */}
-      <div className="rounded-md bg-blue-50 p-4 mb-4">
+      {/* <div className="rounded-md bg-blue-50 p-4 mb-4">
         <div className="flex items-start">
           <Clock className="h-5 w-5 text-blue-400 mt-0.5 mr-2" />
           <div>
@@ -383,7 +396,7 @@ export default function OSMLocationForm({
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
 
       {/* 8-Day Cycle Hours */}
       <div className="space-y-2">
@@ -447,7 +460,7 @@ export default function OSMLocationForm({
                       if (field.value) {
                         convertAddressToCoordinates(
                           field.value,
-                          "currentLocation"
+                          "currentLocation",
                         );
                       }
                     }}
@@ -456,7 +469,7 @@ export default function OSMLocationForm({
                       if (field.value) {
                         fetchLocationSuggestions(
                           field.value,
-                          "currentLocation"
+                          "currentLocation",
                         );
                       }
                     }}
@@ -553,7 +566,7 @@ export default function OSMLocationForm({
                     if (field.value) {
                       convertAddressToCoordinates(
                         field.value,
-                        "pickupLocation"
+                        "pickupLocation",
                       );
                     }
                   }}
@@ -573,8 +586,8 @@ export default function OSMLocationForm({
             )}
             {formValues.pickupLocation.coordinates && (
               <div className="absolute -bottom-5 right-0 text-xs text-green-600">
-                  <CheckCircle className="h-5 w-5 mr-2 pt-1 text-green-700" />
-                  </div>
+                <CheckCircle className="h-5 w-5 mr-2 pt-1 text-green-700" />
+              </div>
             )}
           </div>
 
@@ -637,7 +650,7 @@ export default function OSMLocationForm({
                     if (field.value) {
                       convertAddressToCoordinates(
                         field.value,
-                        "dropoffLocation"
+                        "dropoffLocation",
                       );
                     }
                   }}
@@ -657,8 +670,8 @@ export default function OSMLocationForm({
             )}
             {formValues.dropoffLocation.coordinates && (
               <div className="absolute -bottom-5 right-0 text-xs text-green-600">
-                  <CheckCircle className="h-5 w-5 mr-2 pt-1 text-green-700" />
-                  </div>
+                <CheckCircle className="h-5 w-5 mr-2 pt-1 text-green-700" />
+              </div>
             )}
           </div>
 
@@ -691,18 +704,21 @@ export default function OSMLocationForm({
         </div>
       </div>
 
-      {/* Submit Button */}
+      {/* Calculate Button */}
       <button
         type="submit"
         disabled={
-          isSubmitting || remainingCycleHours <= 0 || remainingDailyHours <= 0
+          isSubmitting ||
+          isCalculating ||
+          remainingCycleHours <= 0 ||
+          remainingDailyHours <= 0
         }
-        className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-orange-700 bg-opacity-60 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70"
+        className="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-[#4169E1] bg-opacity-80 hover:bg-[#4169E1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-70"
       >
-        {isRouteData ? (
+        {isRouteData || isCalculating ? (
           <span className="flex items-center">
             <Loader2 className="animate-spin mr-2 h-4 w-4 text-white" />
-            Submitting...
+            {isCalculating ? "Calculating..." : "Calculating..."}
           </span>
         ) : remainingCycleHours <= 0 ? (
           <>
@@ -716,11 +732,39 @@ export default function OSMLocationForm({
           </>
         ) : (
           <>
-            <span className="mr-2">Continue</span>
+            <span className="mr-2">Calculate Route</span>
             <ArrowRight className="w-4 h-4" />
           </>
         )}
       </button>
+
+      {/* Navigation Buttons */}
+      <div className="grid grid-cols-2 gap-4">
+        <button
+          type="button"
+          onClick={() => {
+            if (routeData) {
+              sessionStorage.setItem("routeData", JSON.stringify(routeData));
+              window.location.href = "/map";
+            }
+          }}
+          disabled={!routeData || isCalculating}
+          className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <Map className="w-4 h-4 mr-2" />
+          <span>Show Map</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={gotoGraph}
+          disabled={!routeData || isCalculating}
+          className="flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <FileText className="w-4 h-4 mr-2" />
+          <span>Show Logs</span>
+        </button>
+      </div>
     </form>
   );
 }

@@ -50,7 +50,7 @@ export default function LocationForm() {
         (error) => {
           console.error("Geolocation error:", error);
           setIsLoading(false);
-        }
+        },
       );
     } else {
       // alert("Geolocation is not supported by your browser");

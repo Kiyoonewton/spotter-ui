@@ -22,8 +22,9 @@ export default function RootLayout({
     <html lang="en">
       <GoogleAnalytics gaId="G-J5JBCXR6J0" />
 
-      <body style={{ background: "#fff" }}
-      // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      <body
+        style={{ background: "#0A1F44" }}
+        // className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <TripProvider>{children}</TripProvider>
       </body>

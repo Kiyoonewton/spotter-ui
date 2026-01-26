@@ -1,3 +1,5 @@
+import { RecapData } from "@/app/types";
+
 export interface DriverHoursData {
   eightDayRule: {
     hoursOn7Days: number;
@@ -13,6 +15,6 @@ export interface DriverHoursData {
 }
 
 export interface DriverHoursGridProps {
-  driversData: DriverHoursData;
+  recap?: RecapData;
   className?: string;
 }

@@ -5,7 +5,11 @@ import React, { useState, useEffect, Suspense } from "react";
 const GraphGrid = React.lazy(() => import("./GraphGrid"));
 const LoadingComponent = React.lazy(() => import("../../LoadingComponent"));
 
-const GraphComponent = ({ graphData }: { graphData: NewDailyLogSheet['graphData'] }) => {
+const GraphComponent = ({
+  graphData,
+}: {
+  graphData: NewDailyLogSheet["graphData"];
+}) => {
   const [isClient, setIsClient] = useState(false);
 
   // This effect runs after the first render/paint

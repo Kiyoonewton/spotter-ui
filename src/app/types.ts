@@ -105,6 +105,20 @@ export interface DailyLogSheet {
   };
 }
 
+export interface RecapData {
+  onDutyHoursToday: number;
+  rule70Hour8Day: {
+    hoursLast7Days: number;       // A: Total hours on duty last 7 days
+    hoursAvailableTomorrow: number; // B: 70 - A
+    hoursLast5Days: number;        // C: Total hours on duty last 5 days
+  };
+  rule60Hour7Day: {
+    hoursLast8Days: number;        // A: Total hours on duty last 8 days
+    hoursAvailableTomorrow: number; // B: 60 - A
+    hoursLast7Days: number;        // C: Total hours on duty last 7 days
+  };
+}
+
 export interface NewDailyLogSheet {
   date: string;
   driverName: string;
@@ -118,6 +132,9 @@ export interface NewDailyLogSheet {
   remarks:string;
   officeAddress:string;
   homeAddress:string;
+  startOdometer?: number;
+  endOdometer?: number;
+  recap?: RecapData;
   graphData: {
     hourData: {
       hour: number;

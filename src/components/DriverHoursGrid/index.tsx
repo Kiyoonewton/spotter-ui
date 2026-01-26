@@ -2,14 +2,14 @@
 
 import React from "react";
 import { DriverHoursGridProps } from "./types";
-import { useTrip } from "@/context/TripContext";
 
 // Define the types for our data
 
 const DriverHoursGrid: React.FC<DriverHoursGridProps> = ({
+  recap,
   className = "",
 }) => {
-  const { onDutyHoursToday } = useTrip();
+
   return (
     <div className={`driver-hours-grid ${className}`}>
       {/* Header Row */}
@@ -20,7 +20,7 @@ const DriverHoursGrid: React.FC<DriverHoursGridProps> = ({
           <p>end of day</p>
         </span>
         <span className="border-b-2 border-black w-full flex items-end text-center text-blue-500 justify-center">
-          {onDutyHoursToday.toFixed(2)}
+          {recap?.onDutyHoursToday?.toFixed(2) || "0.00"}
         </span>
         <span>
           <p className="font-bold whitespace-nowrap">70 Hour/</p>
@@ -30,19 +30,19 @@ const DriverHoursGrid: React.FC<DriverHoursGridProps> = ({
         <span className="border-b-2 border-black w-full flex items-end">
           A.
           <p className="text-blue-500 flex justify-center flex-1">
-            {onDutyHoursToday.toFixed(2)}
+            {recap?.rule70Hour8Day?.hoursLast7Days?.toFixed(2) || "0.00"}
           </p>
         </span>
         <span className="border-b-2 border-black w-full flex items-end">
           B.
           <p className="text-blue-500 flex justify-center flex-1">
-            {onDutyHoursToday.toFixed(2)}
+            {recap?.rule70Hour8Day?.hoursAvailableTomorrow?.toFixed(2) || "70.00"}
           </p>
         </span>
         <span className="border-b-2 border-black w-full flex items-end">
           C.
           <p className="text-blue-500 flex justify-center flex-1">
-            {onDutyHoursToday.toFixed(2)}
+            {recap?.rule70Hour8Day?.hoursLast5Days?.toFixed(2) || "0.00"}
           </p>
         </span>
         <span>
@@ -51,15 +51,21 @@ const DriverHoursGrid: React.FC<DriverHoursGridProps> = ({
         </span>
         <span className="border-b-2 border-black w-full flex items-end">
           A.
-          <p className="text-blue-500 flex justify-center flex-1">{}</p>
+          <p className="text-blue-500 flex justify-center flex-1">
+            {/* Empty - 60/7 rule not used */}
+          </p>
         </span>
         <span className="border-b-2 border-black w-full flex items-end">
           B.
-          <p className="text-blue-500 flex justify-center flex-1">{}</p>
+          <p className="text-blue-500 flex justify-center flex-1">
+            {/* Empty - 60/7 rule not used */}
+          </p>
         </span>
         <span className="border-b-2 border-black w-full flex items-end">
           C.
-          <p className="text-blue-500 flex justify-center flex-1">{}</p>
+          <p className="text-blue-500 flex justify-center flex-1">
+            {/* Empty - 60/7 rule not used */}
+          </p>
         </span>
         <span>
           <p className="font-bold">*if you take</p>
