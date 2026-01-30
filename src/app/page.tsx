@@ -9,7 +9,7 @@ export default function Home() {
   const router = useRouter();
   const [routeData, setRouteData] = useState<RouteWithStops | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [, setError] = useState<string | null>(null);
 
   const gotoGraph = () => {
     // Store route data in sessionStorage and navigate to ELD logs page
@@ -23,7 +23,7 @@ export default function Home() {
     setLoading(true);
     setError(null);
     try {
-      const response = await fetch("http://localhost:8000/api/trip/", {
+      const response = await fetch("https://spotter-api.kiyoo.live/api/trip/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trip: tripData }),
@@ -75,7 +75,6 @@ export default function Home() {
             routeData={routeData}
           />
         </div>
-
       </main>
 
       <footer

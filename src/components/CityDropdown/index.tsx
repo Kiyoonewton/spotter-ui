@@ -47,7 +47,6 @@ const useDebounce = (value: string, delay: number = 500) => {
 
 // Constants for driver hours regulations
 const MAX_DAILY_HOURS = 14; // Maximum hours allowed in a day
-const MAX_DRIVING_HOURS = 11; // Maximum driving hours allowed
 const MAX_CYCLE_HOURS = 70; // Maximum hours in 8-day cycle (70-hour rule)
 
 export default function OSMLocationForm({
@@ -95,36 +94,11 @@ export default function OSMLocationForm({
   // Assuming a standard workday is around 10 hours, with 7 hours of daily driving
   const estimatedDailyHours = Math.min(10, currentCycleHours % 11); // Estimate current day's hours
   const remainingDailyHours = MAX_DAILY_HOURS - estimatedDailyHours;
-  const remainingDrivingHours = MAX_DRIVING_HOURS - estimatedDailyHours;
   const remainingCycleHours = MAX_CYCLE_HOURS - currentCycleHours;
 
   // Calculate when 34-hour reset would be complete
   const resetTime = new Date();
   resetTime.setHours(resetTime.getHours() + 34);
-  const resetTimeString = resetTime.toLocaleString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  });
-
-  // Determine warning level based on remaining hours
-  const getWarningLevel = (hours: number) => {
-    if (hours <= 1) return "text-red-600 font-bold";
-    if (hours <= 3) return "text-amber-500 font-bold";
-    return "text-green-600";
-  };
-
-  // Get recommended action based on remaining hours
-  const getRecommendedAction = () => {
-    if (remainingCycleHours <= 10) {
-      return "Recommended Action: Consider taking a 34-hour restart to reset your 70-hour cycle.";
-    } else if (remainingDailyHours <= 2) {
-      return "Recommended Action: Complete your current trip and take your 10-hour break.";
-    }
-    return "";
-  };
 
   // Debounce search inputs to avoid excessive API calls
   const debouncedCurrentLocation = useDebounce(currentLocationValue);

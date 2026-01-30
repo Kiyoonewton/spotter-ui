@@ -1,12 +1,10 @@
 "use client";
 import React, { useState, useEffect, Suspense } from "react";
-import { GraphDataProps } from "./types";
 
 // Use dynamic import for the GraphGrid component
-const GraphGrid = React.lazy(() => import("./GraphGrid"));
 const LoadingComponent = React.lazy(() => import("../LoadingComponent"));
 
-const GraphWrapper = ({ graphData }: { graphData: GraphDataProps }) => {
+const GraphWrapper = () => {
   const [isClient, setIsClient] = useState(false);
 
   // This effect runs after the first render/paint
